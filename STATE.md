@@ -57,6 +57,11 @@
   existed when it was made; a hand-started green run on `main` therefore counts as the week's result.
   - Check: `gh run list -R coltonbearden/filester-mcp --workflow weekly.yml --event schedule -L 3`.
   - Re-enable: `gh workflow enable weekly.yml`.
+- **One Dependabot alert has no fix to take.** `minimatch` 10.2.5 (alert 2, dev only) is bundled inside the `npm`
+  package that `@semantic-release/npm` carries, so an override can't reach it, and npm 12.2.3, the newest on
+  2026-11-18, still bundles 10.x. It runs only at release time and never ships (`npm audit --omit=dev`: 0). It
+  closes on its own once a semantic-release update brings an npm that bundles `minimatch` 11.0.1 or later.
+  - Check: `gh api 'repos/coltonbearden/filester-mcp/dependabot/alerts?state=open' --jq '.[].dependency.package.name'`.
 - **Dependabot majors stay open.** Patch and minor merge on their own (D-008); a major needs a session.
   - Check: `gh pr list -R coltonbearden/filester-mcp --author app/dependabot`.
   - Then: read the changelog, run the suites, merge with a `fix(deps):` title if it reaches users.
