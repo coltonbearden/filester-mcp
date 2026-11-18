@@ -139,3 +139,16 @@ maintainer saw this before publishing.
   unofficial and not affiliated with Filester.
 - **No copied docs:** the API is described in this project's own words.
 - **The name:** the README names filester.me, since filester.net and filester.app are unrelated services.
+
+## D-012 (2026-11-17) — Streamable HTTP mode listens on loopback only, and a request may bring its own key
+
+`filester-mcp --http [--port <n>]` serves MCP at `http://127.0.0.1:<port>/mcp` (default port 8723), stateless, with a
+fresh server per request. It uses the SDK's Node transport and its localhost Host and Origin checks, so DNS rebinding
+gets a 403. A request's `Authorization: Bearer <key>` wins over the server's own key.
+
+It never listens beyond loopback, because `upload_file` and `set_folder_thumbnail` read paths on the host: a reachable
+server would let any caller upload the host's files.
+- **Rejected: a `--host` flag.** Opening it safely needs a confined files root and real authentication, and nobody
+  has asked for a hosted server yet.
+
+Consequence: hosting it for others means fronting it with something that brings both.
