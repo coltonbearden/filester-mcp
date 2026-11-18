@@ -25,7 +25,9 @@ A squash merge takes the PR title as the commit, so the PR title is what counts.
 4. **Publish, in order:**
    - npm, through trusted publishing (OIDC; provenance automatic);
    - the GitHub release with its notes and the `.mcpb`;
-   - the MCP Registry (`scripts/registry-publish.sh`: `mcp-publisher login github-oidc`, then `publish`).
+   - the MCP Registry (`scripts/registry-publish.sh`: `mcp-publisher login github-oidc`, then `publish`). npm
+     publishes asynchronously, so the script first waits, for up to 20 minutes, until `npm view` serves the new
+     version: the Registry reads the package from npm.
 
 Nothing holds a token. The npm trusted publisher names this repository, `release.yml` and environment `release`.
 Environment `release` deploys from `main` only.
@@ -33,16 +35,23 @@ Environment `release` deploys from `main` only.
 ## The first version (done once, by hand)
 
 npm can't attach a trusted publisher to a package that doesn't exist yet, so 0.1.0 was published from a maintainer's
-machine, after the maintainer's go-ahead on the README and the name:
+machine on 2026-11-18, after the maintainer's go-ahead on the README and the name:
 
 ```sh
-npm login --auth-type=web
-npm version 0.1.0 --no-git-tag-version && npm publish --access public && git checkout package.json
-git tag v0.1.0 <commit> && git push origin v0.1.0
-npx -y npm@11 trust github filester-mcp --file release.yml --repo coltonbearden/filester-mcp --env release --allow-publish
-npm logout
+npx -y npm@11 login --auth-type=web
+npm version 0.1.0 --no-git-tag-version && npx -y npm@11 publish --access public && git checkout package.json package-lock.json
+gh release create v0.1.0 --target <full commit sha> --title v0.1.0 --notes "…"
+npx -y npm@11 trust github filester-mcp --file release.yml --repo coltonbearden/filester-mcp --env release --allow-publish --yes
+npx -y npm@11 access set mfa=publish filester-mcp
+npx -y npm@11 logout
 ```
 
+- **The browser approvals:** the account's 2FA is a passkey, so `publish` and `access set` each print an npmjs.com
+  link to approve in the browser. They wait for it only when run in a terminal; without one, npm stops with `EOTP`.
+- **The tag:** GitHub's email privacy refused a pushed `v0.1.0` (`GH007`, the commit's author address), so
+  `gh release create --target` made the tag on GitHub's side. It needs the full sha.
+- **The placeholder:** a first publish shows only npm's own `0.0.0-stage` version ("Temporary package placeholder for
+  staged publishing") for a few minutes while npm processes the real one. It is npm's, and it stays.
 - **`--allow-publish`:** new trust configs allow only staged publishes, which need a maintainer's 2FA each time; this
   flag lets CI publish directly.
 - **The 2-day window:** a trust config expires unless something publishes through it within 2 days, so the first CI
