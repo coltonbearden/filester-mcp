@@ -89,7 +89,8 @@
 - **Required checks:** `lint`, `test (node 20/22/24)`, `test (windows-latest)`, `test (macos-latest)`, `package` and
   `gitleaks`. `live` isn't required.
 - **Secrets:** `FILESTER_API_KEY` only, in environment `live`. npm and the MCP Registry use OIDC.
-- **The owner's install:** the npm package is on dotfiles' mise list (`npm:filester-mcp`, latest, kept current by the
-  daily upkeep). The Claude Code registration is homelab-state's MCP catalog entry `filester`, with
+- **The owner's install** (planned; it waits on the first npm version): the npm package goes on dotfiles' mise list
+  (`npm:filester-mcp`, latest, kept current by the daily upkeep). The Claude Code registration will be homelab-state's
+  MCP catalog entry `filester` (its BACKLOG row "filester-mcp's catalog entry, after its first npm version"), with
   `FILESTER_API_KEY_FILE` pointing at `~/.config/mcp-keys/filester` (600), written from 1Password by homelab-state's
   `tools/filester/lane.sh`.
