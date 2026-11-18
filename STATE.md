@@ -61,7 +61,13 @@
   package that `@semantic-release/npm` carries, so an override can't reach it, and npm 12.2.3, the newest on
   2026-11-18, still bundles 10.x. It runs only at release time and never ships (`npm audit --omit=dev`: 0). It
   closes on its own once a semantic-release update brings an npm that bundles `minimatch` 11.0.1 or later.
+  Dependabot's security-update run for it fails (2026-11-18), as it must.
   - Check: `gh api 'repos/coltonbearden/filester-mcp/dependabot/alerts?state=open' --jq '.[].dependency.package.name'`.
+- **The bundle packer's `zod` 3.x.** `npm audit` in `packaging/mcpb` reports `zod` <4.6.6 (a memory exhaustion on oversized
+  constrained collections) under `@anthropic-ai/mcpb` 2.1.2, which needs `zod` 3 and has no newer version (2026-11-18).
+  The packer validates only this repo's own manifest, at release time. The server's own `zod` is 4.6.7.
+  `tmp` there is overridden to 0.2.x (#5).
+  - Check: `npm view @anthropic-ai/mcpb version dependencies.zod`.
 - **Dependabot majors stay open.** Patch and minor merge on their own (D-008); a major needs a session.
   - Check: `gh pr list -R coltonbearden/filester-mcp --author app/dependabot`.
   - Then: read the changelog, run the suites, merge with a `fix(deps):` title if it reaches users.
