@@ -8,6 +8,10 @@ updates:
     schedule: { interval: weekly, day: monday, time: "06:00", timezone: America/New_York }
     open-pull-requests-limit: 10
     commit-message: { prefix: fix, prefix-development: chore, include: scope }
+    ignore:
+      # @types/node follows the oldest Node the package supports (engines: >=20), not the newest.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       runtime:
         dependency-type: production
