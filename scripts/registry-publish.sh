@@ -21,5 +21,17 @@ curl -fsSL -o "$work/checksums.txt" "$base/registry_${version}_checksums.txt"
 tar -xzf "$work/$asset" -C "$work" mcp-publisher
 "$work/mcp-publisher" --version 2>/dev/null || true
 "$work/mcp-publisher" validate server.json
+# npm publishes asynchronously: `npm publish` returns while the registry is still processing the version (it can take
+# several minutes, and a first version shows only npm's `0.0.0-stage` placeholder meanwhile). The Registry reads the
+# package from npm, so wait until npm serves this version, for up to 20 minutes.
+pkg_version="$(node -p 'require("./package.json").version')"
+for _ in $(seq 1 80); do
+  if [ "$(npm view "filester-mcp@$pkg_version" version 2>/dev/null)" = "$pkg_version" ]; then break; fi
+  sleep 15
+done
+if [ "$(npm view "filester-mcp@$pkg_version" version 2>/dev/null)" != "$pkg_version" ]; then
+  echo "::error::npm still doesn't serve filester-mcp@$pkg_version after 20 minutes; rerun this job once it does"
+  exit 1
+fi
 "$work/mcp-publisher" login github-oidc
 "$work/mcp-publisher" publish server.json
