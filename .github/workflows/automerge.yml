@@ -1,0 +1,23 @@
+name: automerge
+
+# Dependabot's patch and minor updates merge on their own once every required check is green (auto-merge waits for
+# them). Majors stay open for a person or a session (STATE.md says how). The merge is made with the workflow token,
+# so it starts no push run; release.yml's daily schedule releases any fix it brings.
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'coltonbearden/filester-mcp'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        id: meta
+      - if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

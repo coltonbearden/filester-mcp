@@ -1,0 +1,33 @@
+# Weekly updates. Patch and minor merge on their own once CI is green (automerge.yml); majors stay open.
+# Commit prefixes drive releases: runtime dependencies are `fix(deps)` (a patch release reaches users), dev
+# dependencies and the bundle's packing tool `chore(...)`, actions `ci(deps)` (no release).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: America/New_York }
+    open-pull-requests-limit: 10
+    commit-message: { prefix: fix, prefix-development: chore, include: scope }
+    groups:
+      runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+      dev:
+        dependency-type: development
+        update-types: [minor, patch]
+  - package-ecosystem: npm
+    directory: /packaging/mcpb
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: America/New_York }
+    commit-message: { prefix: chore, include: scope }
+    groups:
+      mcpb:
+        patterns: ["*"]
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday, time: "06:00", timezone: America/New_York }
+    commit-message: { prefix: ci, include: scope }
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types: [minor, patch]

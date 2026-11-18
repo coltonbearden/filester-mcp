@@ -1,0 +1,67 @@
+{
+  "name": "filester-mcp",
+  "version": "0.0.0-development",
+  "description": "Unofficial MCP server and CLI for the whole Filester (filester.me) file-hosting API: uploads, files, folders, account.",
+  "mcpName": "io.github.coltonbearden/filester-mcp",
+  "type": "module",
+  "license": "MIT",
+  "author": "Colton Bearden",
+  "homepage": "https://github.com/coltonbearden/filester-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coltonbearden/filester-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/coltonbearden/filester-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "filester",
+    "file-hosting",
+    "upload",
+    "claude",
+    "mcp-server",
+    "cli"
+  ],
+  "bin": {
+    "filester-mcp": "dist/server.js",
+    "filester": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run --project unit",
+    "test:slow": "vitest run --project slow",
+    "test:live": "vitest run --project live",
+    "prepack": "npm run build",
+    "bundle": "bash scripts/build-mcpb.sh"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/node": "^2.1.2",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.8",
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@semantic-release/exec": "^7.1.0",
+    "@types/node": "^22.20.5",
+    "semantic-release": "^26.0.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-mcpb/
+coverage/
+*.tgz
+*.mcpb
+.env
+.env.*

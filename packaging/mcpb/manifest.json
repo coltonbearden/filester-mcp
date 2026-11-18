@@ -1,0 +1,40 @@
+{
+  "manifest_version": "0.3",
+  "name": "filester-mcp",
+  "display_name": "Filester (unofficial)",
+  "version": "0.0.0",
+  "description": "Upload, organise and manage files on Filester (filester.me): every API endpoint as a tool.",
+  "long_description": "An unofficial MCP server for Filester's whole REST API: streamed uploads up to 10 GB, files and folders, moves, deletes, file details and account usage. Not made by or affiliated with Filester. Without an API key only guest uploads and the health check work.",
+  "author": { "name": "Colton Bearden", "url": "https://github.com/coltonbearden" },
+  "repository": { "type": "git", "url": "https://github.com/coltonbearden/filester-mcp" },
+  "homepage": "https://github.com/coltonbearden/filester-mcp#readme",
+  "documentation": "https://github.com/coltonbearden/filester-mcp#readme",
+  "support": "https://github.com/coltonbearden/filester-mcp/issues",
+  "license": "MIT",
+  "keywords": ["filester", "file hosting", "upload", "files", "folders"],
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/server.js"],
+      "env": { "FILESTER_API_KEY": "${user_config.api_key}" }
+    }
+  },
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "Filester API key",
+      "description": "From Account Settings at filester.me. Leave it empty for guest uploads only.",
+      "sensitive": true,
+      "required": false
+    }
+  },
+  "tools": [],
+  "tools_generated": false,
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": { "node": ">=20.0.0" }
+  }
+}

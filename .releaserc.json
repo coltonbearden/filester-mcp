@@ -1,0 +1,25 @@
+{
+  "branches": ["main"],
+  "tagFormat": "v${version}",
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/npm",
+    [
+      "@semantic-release/github",
+      {
+        "assets": [{ "path": "dist-mcpb/*.mcpb", "label": "Claude Desktop extension (.mcpb)" }],
+        "successComment": false,
+        "failComment": false,
+        "releasedLabels": false
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "node scripts/set-version.mjs ${nextRelease.version} && bash scripts/build-mcpb.sh ${nextRelease.version}",
+        "publishCmd": "bash scripts/registry-publish.sh"
+      }
+    ]
+  ]
+}

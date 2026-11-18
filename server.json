@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.coltonbearden/filester-mcp",
+  "title": "Filester (unofficial)",
+  "description": "Unofficial MCP server for the Filester (filester.me) API: uploads, files, folders, account.",
+  "websiteUrl": "https://github.com/coltonbearden/filester-mcp#readme",
+  "repository": {
+    "url": "https://github.com/coltonbearden/filester-mcp",
+    "source": "github"
+  },
+  "version": "0.0.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "filester-mcp",
+      "version": "0.0.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "FILESTER_API_KEY",
+          "description": "Your Filester API key (Account Settings at filester.me). Without it, only guest uploads and the health check work.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}

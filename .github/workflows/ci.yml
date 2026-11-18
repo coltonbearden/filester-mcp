@@ -1,0 +1,132 @@
+name: ci
+
+# Every push and pull request: lint and types, unit tests on Node 20/22/24 and on Windows and macOS, the package and
+# the Claude Desktop bundle as they'd ship (with the MCP Inspector calling the built server), and a secret scan.
+# All of these are required checks on main (docs/REPO_SETTINGS.md). The live API tests are live.yml.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  test:
+    name: test (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  test-os:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  package:
+    name: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: npm pack, as it would publish
+        run: npm pack --dry-run 2>&1 | tee pack.txt && grep -q 'dist/server.js' pack.txt && grep -q 'dist/cli.js' pack.txt
+      - name: the packed tarball runs from a clean folder
+        run: |
+          npm pack --silent > tarball.txt
+          mkdir /tmp/clean && cd /tmp/clean
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund "$GITHUB_WORKSPACE/$(cat "$GITHUB_WORKSPACE/tarball.txt")"
+          npx --no-install filester-mcp --version
+          npx --no-install filester --version
+          npx --no-install filester --help > /dev/null
+      - name: MCP Inspector lists and calls the tools
+        run: |
+          npx -y @modelcontextprotocol/inspector --cli node dist/server.js --method tools/list > tools.json
+          node -e 'const t=JSON.parse(require("fs").readFileSync("tools.json","utf8")).tools; if (t.length !== 16) { console.error("tools:", t.length); process.exit(1) } console.log("inspector sees", t.length, "tools")'
+          # a keyless call answers without touching the network (a required check must not depend on Filester being up)
+          npx -y @modelcontextprotocol/inspector --cli node dist/server.js --method tools/call --tool-name get_account | tee call.json
+          grep -q 'needs a Filester API key' call.json
+      - name: the Claude Desktop bundle packs, validates and starts
+        run: |
+          bash scripts/build-mcpb.sh 0.0.0-ci
+          mkdir /tmp/bundle && cd /tmp/bundle && unzip -q "$GITHUB_WORKSPACE"/dist-mcpb/*.mcpb
+          node dist/server.js --version
+      - name: server.json is a valid MCP Registry entry
+        run: node -e 'const s=require("./server.json"); const p=require("./package.json"); if (s.name !== p.mcpName || s.description.length > 100) process.exit(1); console.log(s.name)'
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: scan the history for secrets (gitleaks' latest release, checksum-verified)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh api repos/gitleaks/gitleaks/releases/latest --jq .tag_name)
+          v=${tag#v}
+          cd /tmp
+          gh release download "$tag" -R gitleaks/gitleaks -p "gitleaks_${v}_linux_x64.tar.gz" -p "gitleaks_${v}_checksums.txt"
+          grep " gitleaks_${v}_linux_x64.tar.gz$" "gitleaks_${v}_checksums.txt" | sha256sum -c -
+          tar -xzf "gitleaks_${v}_linux_x64.tar.gz" gitleaks
+          cd "$GITHUB_WORKSPACE"
+          /tmp/gitleaks git --redact --no-banner --exit-code 1 .

@@ -1,0 +1,22 @@
+name: weekly
+
+# Mondays: the whole test suite and the live suite on main, so a change on Filester's side shows up within a week
+# even when nothing is merged. Its own workflow, not a schedule in ci.yml or live.yml: GitHub switches a scheduled
+# workflow off after 60 days without repository activity, and only this wrapper may be switched off that way
+# (`gh workflow enable weekly.yml` restores it). Kuma's "filester-mcp weekly" monitor reads this workflow's
+# scheduled runs (homelab-state tools/actions-watch).
+on:
+  schedule:
+    - cron: "23 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+  live:
+    needs: ci
+    uses: ./.github/workflows/live.yml
+    secrets: inherit

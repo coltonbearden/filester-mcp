@@ -1,0 +1,49 @@
+name: live
+
+# The live suite against Filester's real API (test/live.test.ts): every tool, in a folder of its own, everything it
+# made deleted, the account checked back to where it started. Runs on each push to main, from weekly.yml, and by hand.
+# The key is the environment secret FILESTER_API_KEY in environment "live", which deploys from main only, so pull
+# requests (forks and Dependabot included) never see it. Nothing here prints an account, file or folder name.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: filester-live
+  cancel-in-progress: false
+
+jobs:
+  live:
+    name: live
+    runs-on: ubuntu-latest
+    environment: live
+    env:
+      HAS_KEY: ${{ secrets.FILESTER_API_KEY != '' }}
+    steps:
+      - name: the key is there (a scheduled run without one fails, so the weekly monitor goes red)
+        if: env.HAS_KEY != 'true'
+        run: |
+          echo "::warning::no FILESTER_API_KEY in environment live; the live suite did not run"
+          [ "${{ github.event_name }}" != "schedule" ] || exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.HAS_KEY == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: env.HAS_KEY == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.HAS_KEY == 'true'
+        run: npm ci
+      - if: env.HAS_KEY == 'true'
+        run: npm run build
+      - if: env.HAS_KEY == 'true'
+        run: npm run test:live
+        env:
+          FILESTER_API_KEY: ${{ secrets.FILESTER_API_KEY }}

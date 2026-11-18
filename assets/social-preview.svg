@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <rect width="1280" height="640" fill="#0f172a"/>
+  <g transform="translate(96 192) scale(0.5)">
+    <rect width="512" height="512" rx="112" fill="#1e293b"/>
+    <path d="M120 176a32 32 0 0 1 32-32h70l34 34h104a32 32 0 0 1 32 32v150a32 32 0 0 1-32 32H152a32 32 0 0 1-32-32z" fill="#38bdf8"/>
+    <polygon points="256,226 318,292 278,292 278,358 234,358 234,292 194,292" fill="#1e293b"/>
+  </g>
+  <text x="400" y="290" font-family="DejaVu Sans, Helvetica, Arial, sans-serif" font-size="88" font-weight="bold" fill="#f8fafc">filester-mcp</text>
+  <text x="402" y="356" font-family="DejaVu Sans, Helvetica, Arial, sans-serif" font-size="34" fill="#cbd5e1">The whole Filester API as MCP tools and a CLI</text>
+  <text x="402" y="408" font-family="DejaVu Sans Mono, Menlo, monospace" font-size="30" fill="#38bdf8">npx -y filester-mcp</text>
+  <text x="96" y="580" font-family="DejaVu Sans, Helvetica, Arial, sans-serif" font-size="24" fill="#64748b">Unofficial · not affiliated with Filester · MIT</text>
+</svg>
