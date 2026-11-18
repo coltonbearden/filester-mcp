@@ -98,6 +98,21 @@ Add to `.vscode/mcp.json`. VS Code asks for the key once and stores it for you:
 The command is `npx -y filester-mcp`, which serves MCP over stdio. The key goes in the environment as
 `FILESTER_API_KEY`.
 
+### Streamable HTTP (local)
+
+For a client that connects to a URL instead of starting a command:
+
+```sh
+npx -y filester-mcp --http            # http://127.0.0.1:8723/mcp   (--port to change it)
+```
+
+- **Stateless:** each request gets a fresh server.
+- **Keys per request:** a request may bring its own key as `Authorization: Bearer <your-key>`. Otherwise the server's
+  `FILESTER_API_KEY` is used, if it has one.
+- **Loopback only:** it listens on 127.0.0.1 and refuses requests whose `Host` or `Origin` isn't local. That's
+  deliberate. The upload tools read paths on the machine the server runs on, so a server other machines could reach
+  would let them upload its files.
+
 ## Configuration
 
 | Variable | What it does |
