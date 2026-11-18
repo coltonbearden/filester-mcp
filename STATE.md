@@ -5,25 +5,25 @@
 
 ## Now
 
-- **Status:** pre-release, public and hardened. Nothing is on npm yet.
-  - The offline suite passes (46 tests). The live suite passed against the real API on 2026-11-17, including a 1 GiB
+- **Status:** released. `filester-mcp` 0.2.0 is `latest` on npm (with provenance), on the MCP Registry as
+  `io.github.coltonbearden/filester-mcp`, and on GitHub as release v0.2.0 with `filester-mcp-0.2.0.mcpb`.
+  - The offline suite passes (51 tests). The live suite passed against the real API on 2026-11-17, including a 1 GiB
     streamed upload at a 131 MiB peak, and in CI on `main` on 2026-11-18 with the `live` secret (run 44258915040).
-  - The owner's go-ahead on the README and the name: given 2026-11-17 ("Publish").
-- **In flight:** the first npm version. It waits on the owner's npm sign-in: `npm login --auth-type=web` hands out a
-  link that npm keeps alive for about 5 minutes, and four of them lapsed on 2026-11-18 before the approval. The owner
-  runs `npx -y npm@11 login --auth-type=web` in a T14 WSL terminal, or signs in at npmjs.com first and has a session
-  start the link.
+  - Releases are hands-off from here: a `feat:` or `fix:` merge to `main` publishes through npm's trusted publisher.
+- **In flight:** the owner's install, which waits a day. mise 2026.11 holds every release back until it is 24 hours
+  old, so mise takes no version before 0.2.0 turns a day old, 2026-11-19 11:16 EST (dotfiles D-136). The owner chose to
+  wait rather than exempt the package.
 - **How a failure reaches the owner:** a failed `release.yml` run, or a failed `weekly.yml` run on `main`, turns
   Kuma's `filester-mcp release` or `filester-mcp weekly` monitor down (homelab-state's `tools/actions-watch`, its
   D-295). home-setup's kuma-tasks then files a Home task on the `filester-mcp` hub, after about an hour without a
   success. kuma-tasks runs on dev-a and writes nothing while Obsidian is closed there. A red PR check blocks its
   merge.
-- **Next:**
-  1. The owner's npm sign-in; then publish 0.1.0 by hand, tag `v0.1.0`, and create the trusted publisher
-     (docs/RELEASING.md, "The first version").
-  2. Within 2 days of the trusted publisher: merge PR #2 (Streamable HTTP) as 0.2.0, the first CI release.
-  3. The owner's install: `"npm:filester-mcp" = "latest"` on dotfiles' mise list (its D-136), then homelab-state's
-     catalog entry `filester` on the four sides. The key files those read are in place (below).
+- **Next** (after 2026-11-19 11:16 EST, in this order):
+  1. dotfiles D-136: `"npm:filester-mcp" = "latest"` on mise's list (dotfiles `9188af0`'s change again), rolled out
+     by `bin/sides`; `filester --version` and `filester-mcp --version` on the four sides.
+  2. homelab-state's BACKLOG row "filester-mcp's catalog entry": its catalog entry `filester` on the four sides, in a
+     Guarded sitting of its own. The key files it reads are in place (below).
+  3. Claude Desktop on both machines: the kickoff `~/kickoffs/filester-mcp-claude-desktop-kickoff_11-18-2026.md`.
 
 ## Done
 
@@ -48,6 +48,17 @@
   - The Kuma monitors `filester-mcp release` and `filester-mcp weekly`, up since 05:26 EST. `weekly.yml` was started by
     hand on `main` first (run 44283795822), so the weekly monitor had a run to read. Its first attempt lost the
     runner's network at checkout, and `gh run rerun --failed` went green, the live suite included.
+  - The first versions:
+    - **0.1.0**, published by hand at 10:59 EST on the owner's npm sign-in. Its tag was made by `gh release create`,
+      because GitHub's email privacy refused a pushed tag.
+    - **The trusted publisher** (`release.yml`, environment `release`, publish allowed) at 11:01. Publishing access
+      then went to "require 2FA, disallow tokens" (`npm access set mfa=publish`), and npm was signed out at 11:04.
+    - **0.2.0** (Streamable HTTP, #2) from CI at 11:12 (run 44344390416): npm with provenance, the GitHub release with
+      the `.mcpb`, and the MCP Registry.
+  - Two release fixes found on the way:
+    - **#7:** npm now publishes asynchronously (a new version can 404 for minutes), so the Registry step waits for
+      `npm view`. 0.2.0 waited about 4.5 minutes.
+    - **#8:** `release.yml` sets up Node 26, which semantic-release 26 requires.
 
 ## Open issues
 
@@ -89,8 +100,11 @@
 - **Required checks:** `lint`, `test (node 20/22/24)`, `test (windows-latest)`, `test (macos-latest)`, `package` and
   `gitleaks`. `live` isn't required.
 - **Secrets:** `FILESTER_API_KEY` only, in environment `live`. npm and the MCP Registry use OIDC.
-- **The owner's install** (planned; it waits on the first npm version): the npm package goes on dotfiles' mise list
-  (`npm:filester-mcp`, latest, kept current by the daily upkeep). The Claude Code registration will be homelab-state's
-  MCP catalog entry `filester` (its BACKLOG row "filester-mcp's catalog entry, after its first npm version"), with
+- **Release run:** Node 26 (semantic-release 26 needs >=26.13; CI's tests run on 20, 22 and 24). npm's publish is
+  asynchronous, so a version can 404 for minutes after `+ filester-mcp@x`; `scripts/registry-publish.sh` waits up to
+  20 minutes for it.
+- **The owner's install** (planned; after 2026-11-19 11:16 EST): the npm package goes on dotfiles' mise list
+  (`npm:filester-mcp`, latest, kept current by the daily upkeep a day after each release). The Claude Code registration
+  will be homelab-state's MCP catalog entry `filester` (its BACKLOG row "filester-mcp's catalog entry"), with
   `FILESTER_API_KEY_FILE` pointing at `~/.config/mcp-keys/filester` (600), written from 1Password by homelab-state's
   `tools/filester/lane.sh`.
