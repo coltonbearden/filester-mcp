@@ -4,5 +4,8 @@
   "description": "Locks the mcpb CLI that packs the Claude Desktop extension, so Dependabot keeps it current.",
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2"
+  },
+  "overrides": {
+    "tmp": "^0.2.6"
   }
 }
