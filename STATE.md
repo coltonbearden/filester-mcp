@@ -5,22 +5,24 @@
 
 ## Now
 
-- **Status:** pre-release. The server, the CLI, the tests and the release machinery are built.
+- **Status:** pre-release, public and hardened. Nothing is on npm yet.
   - The offline suite passes (46 tests). The live suite passed against the real API on 2026-11-17, including a 1 GiB
-    streamed upload at a 131 MiB peak.
-  - Nothing is published yet.
-- **In flight:** the first public release. The order is in "Next".
-- **How a failure reaches the owner:** a failed `release.yml` run, or a failed scheduled `weekly.yml` run, turns
-  Kuma's `filester-mcp release` or `filester-mcp weekly` monitor down. home-setup's kuma-tasks then files a Home task
-  on the `filester-mcp` hub, after about an hour without a success (homelab-state's `tools/actions-watch`, made after
-  the first release). A red PR check blocks its merge.
+    streamed upload at a 131 MiB peak, and in CI on `main` on 2026-11-18 with the `live` secret (run 44258915040).
+  - The owner's go-ahead on the README and the name: given 2026-11-17 ("Publish").
+- **In flight:** the first npm version. It waits on the owner's npm sign-in: `npm login --auth-type=web` hands out a
+  link that npm keeps alive for about 5 minutes, and four of them lapsed on 2026-11-18 before the approval. The owner
+  runs `npx -y npm@11 login --auth-type=web` in a T14 WSL terminal, or signs in at npmjs.com first and has a session
+  start the link.
+- **How a failure reaches the owner:** a failed `release.yml` run, or a failed `weekly.yml` run on `main`, turns
+  Kuma's `filester-mcp release` or `filester-mcp weekly` monitor down (homelab-state's `tools/actions-watch`, its
+  D-295). home-setup's kuma-tasks then files a Home task on the `filester-mcp` hub, after about an hour without a
+  success. A red PR check blocks its merge.
 - **Next:**
-  1. Push the public repo, run `scripts/github-harden.sh`, and have the owner set `FILESTER_API_KEY` in environment
-     `live`.
-  2. The owner's go-ahead on the README and the name.
-  3. Publish 0.1.0 by hand and create the trusted publisher (docs/RELEASING.md, "The first version").
-  4. Merge the Streamable HTTP feature as 0.2.0, the first CI release.
-  5. The Kuma monitors, then the owner's own install (homelab-state's catalog, dotfiles' mise list).
+  1. The owner's npm sign-in; then publish 0.1.0 by hand, tag `v0.1.0`, and create the trusted publisher
+     (docs/RELEASING.md, "The first version").
+  2. Within 2 days of the trusted publisher: merge PR #2 (Streamable HTTP) as 0.2.0, the first CI release.
+  3. The owner's install: `"npm:filester-mcp" = "latest"` on dotfiles' mise list (its D-136), then homelab-state's
+     catalog entry `filester` on the four sides. The key files those read are in place (below).
 
 ## Done
 
@@ -37,11 +39,18 @@
     - the account back at its starting state each time.
   - The Claude Desktop bundle packs, validates and starts with 16 tools.
 
+- 2026-11-18: the repository's side of the release, and the owner's estate around it.
+  - The `live` environment's `FILESTER_API_KEY` set from 1Password; the live suite green on `main` with it.
+  - The key file `~/.config/mcp-keys/filester` on the owner's four sides (WSL 600; Windows this user only), written
+    from 1Password by homelab-state's `tools/filester/lane.sh`.
+  - home-setup's owner entry for the two monitors, and the Atlas hub `Colton/Projects/filester-mcp.md`.
+
 ## Open issues
 
 - **A switched-off weekly schedule is invisible.** GitHub disables a scheduled workflow in a public repository after
   60 days without activity, and Kuma's monitor keeps reading the last green run. Dependabot's weekly merges count as
-  activity.
+  activity. The weekly monitor reads the newest run on `main`, scheduled or started by hand, because no scheduled run
+  existed when it was made; a hand-started green run on `main` therefore counts as the week's result.
   - Check: `gh run list -R coltonbearden/filester-mcp --workflow weekly.yml --event schedule -L 3`.
   - Re-enable: `gh workflow enable weekly.yml`.
 - **Dependabot majors stay open.** Patch and minor merge on their own (D-008); a major needs a session.
