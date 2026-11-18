@@ -16,7 +16,8 @@
 - **How a failure reaches the owner:** a failed `release.yml` run, or a failed `weekly.yml` run on `main`, turns
   Kuma's `filester-mcp release` or `filester-mcp weekly` monitor down (homelab-state's `tools/actions-watch`, its
   D-295). home-setup's kuma-tasks then files a Home task on the `filester-mcp` hub, after about an hour without a
-  success. A red PR check blocks its merge.
+  success. kuma-tasks runs on dev-a and writes nothing while Obsidian is closed there. A red PR check blocks its
+  merge.
 - **Next:**
   1. The owner's npm sign-in; then publish 0.1.0 by hand, tag `v0.1.0`, and create the trusted publisher
      (docs/RELEASING.md, "The first version").
@@ -44,6 +45,9 @@
   - The key file `~/.config/mcp-keys/filester` on the owner's four sides (WSL 600; Windows this user only), written
     from 1Password by homelab-state's `tools/filester/lane.sh`.
   - home-setup's owner entry for the two monitors, and the Atlas hub `Colton/Projects/filester-mcp.md`.
+  - The Kuma monitors `filester-mcp release` and `filester-mcp weekly`, up since 05:26 EST. `weekly.yml` was started by
+    hand on `main` first (run 44283795822), so the weekly monitor had a run to read. Its first attempt lost the
+    runner's network at checkout, and `gh run rerun --failed` went green, the live suite included.
 
 ## Open issues
 
