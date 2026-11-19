@@ -10,20 +10,14 @@
   - The offline suite passes (51 tests). The live suite passed against the real API on 2026-11-17, including a 1 GiB
     streamed upload at a 131 MiB peak, and in CI on `main` on 2026-11-18 with the `live` secret (run 44258915040).
   - Releases are hands-off from here: a `feat:` or `fix:` merge to `main` publishes through npm's trusted publisher.
-- **In flight:** the owner's install, which waits a day. mise 2026.11 holds every release back until it is 24 hours
-  old, so mise takes no version before 0.2.0 turns a day old, 2026-11-19 11:16 EST (dotfiles D-136). The owner chose to
-  wait rather than exempt the package.
+- **In flight:** nothing. The owner's install is done on the four sides (Done, 2026-11-19); Claude Desktop is next.
 - **How a failure reaches the owner:** a failed `release.yml` run, or a failed `weekly.yml` run on `main`, turns
   Kuma's `filester-mcp release` or `filester-mcp weekly` monitor down (homelab-state's `tools/actions-watch`, its
   D-295). home-setup's kuma-tasks then files a Home task on the `filester-mcp` hub, after about an hour without a
   success. kuma-tasks runs on dev-a and writes nothing while Obsidian is closed there. A red PR check blocks its
   merge.
-- **Next** (after 2026-11-19 11:16 EST, in this order):
-  1. dotfiles D-136: `"npm:filester-mcp" = "latest"` on mise's list (dotfiles `9188af0`'s change again), rolled out
-     by `bin/sides`; `filester --version` and `filester-mcp --version` on the four sides.
-  2. homelab-state's BACKLOG row "filester-mcp's catalog entry": its catalog entry `filester` on the four sides, in a
-     Guarded sitting of its own. The key files it reads are in place (below).
-  3. Claude Desktop on both machines: the kickoff `~/kickoffs/filester-mcp-claude-desktop-kickoff_11-18-2026.md`.
+- **Next:** Claude Desktop on both machines, the kickoff `~/kickoffs/filester-mcp-claude-desktop-kickoff_11-18-2026.md`.
+  Its two stop checks, the npm package and homelab-state's catalog entry `filester`, both pass since 2026-11-19.
 
 ## Done
 
@@ -59,6 +53,11 @@
     - **#7:** npm now publishes asynchronously (a new version can 404 for minutes), so the Registry step waits for
       `npm view`. 0.2.0 waited about 4.5 minutes.
     - **#8:** `release.yml` sets up Node 26, which semantic-release 26 requires.
+- 2026-11-19: the owner's install, from the kickoff `filester-mcp-install-kickoff_11-19-2026.md` (homelab-state E-943,
+  E-944).
+  - 0.2.0 from npm through mise on the four sides: the T14's WSL and Windows sides, and dev-a's.
+  - homelab-state's catalog entry `filester` is wired at user scope on all four.
+  - A fresh Claude Code session on the T14's WSL lists the 16 tools, and `get_account` answers.
 
 ## Open issues
 
@@ -103,8 +102,8 @@
 - **Release run:** Node 26 (semantic-release 26 needs >=26.13; CI's tests run on 20, 22 and 24). npm's publish is
   asynchronous, so a version can 404 for minutes after `+ filester-mcp@x`; `scripts/registry-publish.sh` waits up to
   20 minutes for it.
-- **The owner's install** (planned; after 2026-11-19 11:16 EST): the npm package goes on dotfiles' mise list
-  (`npm:filester-mcp`, latest, kept current by the daily upkeep a day after each release). The Claude Code registration
-  will be homelab-state's MCP catalog entry `filester` (its BACKLOG row "filester-mcp's catalog entry"), with
-  `FILESTER_API_KEY_FILE` pointing at `~/.config/mcp-keys/filester` (600), written from 1Password by homelab-state's
-  `tools/filester/lane.sh`.
+- **The owner's install** (since 2026-11-19): the npm package is on dotfiles' mise list (`npm:filester-mcp`, latest,
+  kept current by the daily upkeep a day after each release; dotfiles D-136). The Claude Code registration is
+  homelab-state's MCP catalog entry `filester`, at user scope on the owner's four sides. It runs the `filester-mcp` shim
+  with `FILESTER_API_KEY_FILE` pointing at `~/.config/mcp-keys/filester` (600), written from 1Password by
+  homelab-state's `tools/filester/lane.sh`.
